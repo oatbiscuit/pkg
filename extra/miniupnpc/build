@@ -1,0 +1,9 @@
+#!/bin/sh -e
+
+patch -p1 < includes.patch
+
+make
+make DESTDIR="$1" PREFIX=/usr install
+
+python setup.py build
+python setup.py install --skip-build --prefix=/usr --root="$1"
