@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+# add cmake support
+patch -p1 < cmake-support.patch
+
+export DESTDIR="$1"
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr
+
+cmake --build   build
+cmake --install build
