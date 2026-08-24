@@ -36,9 +36,15 @@ jobs:
           echo "" >> outdated.txt
           /usr/local/bin/kiss-outdated extra/ pkg/ 2>&1 | \
             grep -v '^\[Checking' | \
+            grep -v '^[[:space:]]*$' | \
+            grep -v '^[[:space:]]*\[[[:space:]]*\]' | \
             while read line; do
               echo "- [ ] $line" >> outdated.txt
             done
+
+          if [[ ! -s outdated.txt ]]; then
+            echo "No outdated packages found." > outdated.txt
+          fi
           
           echo "content<<EOF" >> $GITHUB_OUTPUT
           cat outdated.txt >> $GITHUB_OUTPUT
