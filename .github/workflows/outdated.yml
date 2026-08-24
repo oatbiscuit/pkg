@@ -1,6 +1,9 @@
 name: check outdated
 
 on:
+  schedule:
+    # Runs every sunday
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -15,55 +18,24 @@ jobs:
 
     steps:
       - name: checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup KISS tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+          sudo curl -sL https://codeberg.org/kiss-community/kiss/raw/branch/master/contrib/kiss-outdated > /usr/local/bin/kiss-outdated
+          sudo curl -sL https://codeberg.org/kiss-community/kiss/raw/branch/master/kiss > /usr/local/bin/kiss
+          sudo chmod +x /usr/local/bin/kiss-outdated /usr/local/bin/kiss
 
       - name: find outdated binaries
         id: find-outdated
         run: |
-          touch outdated
-          find extra pkg -name "version" -type f 2>/dev/null | while read versionpath; do
-            package=$(basename "$(dirname "$versionpath")")
-            version=$(awk '{print $1}' "$versionpath")
-
-            echo "Checking package: $package (version: $version)"
-            
-            # remap weird package names
-            repology_package=$(
-              case $package in
-                act) echo "act-run-github-actions" ;;
-                *) echo "$package" ;;
-              esac
-            )
-
-            echo "Repology package name: $repology_package"
-            
-            latest=$(curl --location --silent --user-agent 'github/kiss-community outdated tracker' "https://repology.org/api/v1/project/$repology_package" \
-              | jq -r  '.[] | select(.srcname == "'$repology_package'") | .version' \
-              | grep -E '^[0-9]+(\.[0.9]+)*$' \
-              | sort -V \
-              | tail -1)
-
-            if [[ -z "$latest" ]]; then
-              echo "Trying without filtering..."
-              latest=$(curl --location --silent --user-agent 'github/kiss-community outdated tracker' "https://repology.org/api/v1/project/$repology_package" \
-              | jq -r  '.[] | .version' \
-              | grep -E '^[0-9]+(\.[0.9]+)*$' \
-              | sort -V \
-              | tail -1)
-            fi
-
-            echo "Latest version found: $latest"
-            
-            if [[ -n "$latest" ]] && [[ "$version" != "$latest" ]]; then
-              echo "- [ ] $package: $version -> $latest" >> outdated
-            elif [[ -n "$latest" ]]; then
-              echo "$package is up to date ($version)"
-            else
-              echo "Could not find $package on Repology"
-            fi
-            echo "---"
-          done
-          echo "::set-output name=content::$(cat outdated)"
+          /usr/local/bin/kiss-outdated extra/ pkg/ 2>&1 | tee outdated.txt
+          content=$(cat outdated.txt)
+          echo "content=$content" >> $GITHUB_OUTPUT
 
       - uses: JasonEtco/create-an-issue@v2
         id: create-issue
