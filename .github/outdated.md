@@ -4,4 +4,6 @@ title: outdated packages
 
 # outdated packages
 
-{{ env.CONTENT }}
+These packages have newer versions available:
+
+{{ CONTENT }}
