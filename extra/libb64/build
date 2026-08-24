@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+make all_src
+make DESTDIR="$1" PREFIX=/usr install
