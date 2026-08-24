@@ -6,4 +6,4 @@ title: outdated packages
 
 These packages have newer versions available:
 
-{{ CONTENT }}
+{{ env.CONTENT }}
