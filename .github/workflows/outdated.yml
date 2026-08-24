@@ -33,9 +33,12 @@ jobs:
       - name: find outdated binaries
         id: find-outdated
         run: |
-          /usr/local/bin/kiss-outdated extra/ pkg/ 2>&1 | tee raw_output.txt
-
-          grep -v '^\[Checking' raw_output.txt > outdated.txt
+          echo "" >> outdated.txt
+          /usr/local/bin/kiss-outdated extra/ pkg/ 2>&1 | \
+            grep -v '^\[Checking' | \
+            while read line; do
+              echo "- [ ] $line" >> outdated.txt
+            done
           
           echo "content<<EOF" >> $GITHUB_OUTPUT
           cat outdated.txt >> $GITHUB_OUTPUT
