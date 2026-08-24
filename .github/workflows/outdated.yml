@@ -18,16 +18,16 @@ jobs:
         run: |
           touch outdated
           for versionpath in */version; do
-            package=$(basename $(dirname "$versionpath"))
-            version=$(awk '{print $1}' $versionpath)
+            package=$(basename "$(dirname "$versionpath")")
+            version=$(awk '{print $1}' "$versionpath")
             # remap weird package names
             repology_package=$(
               case $package in
                 act) echo "act-run-github-actions" ;;
-                *) echo $package ;;
+                *) echo "$package" ;;
               esac
             )
-            latest=$(curl --location --silent --user-agent 'github/kiss-community outdated tracker' repology.org/api/v1/project/$repology_package \
+            latest=$(curl --location --silent --user-agent 'github/kiss-community outdated tracker' "repology.org/api/v1/project/$repology_package" \
               jq -r  ".[] | select(.visiblename == \"$package\") | .version" \
               | grep --invert-match '[a-zA-Z]' \
               | sort --version-sort \
