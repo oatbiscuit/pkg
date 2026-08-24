@@ -3,6 +3,10 @@ name: check outdated
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   check_outdated:
     runs-on: ubuntu-latest
