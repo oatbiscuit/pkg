@@ -21,11 +21,11 @@ jobs:
         id: find-outdated
         run: |
           touch outdated
-          for versionpath in extra/*/version pkg/*/version; do
-            [[ -f "$versionpath" ]] | continue
-            
+          find extra pkg -name "version" -type f 2>/dev/null | while read versionpath; do
             package=$(basename "$(dirname "$versionpath")")
             version=$(awk '{print $1}' "$versionpath")
+
+            echo "Checking package: $package (version: $version)"
             
             # remap weird package names
             repology_package=$(
@@ -34,15 +34,21 @@ jobs:
                 *) echo "$package" ;;
               esac
             )
+
+            echo "Repology package name: $repology_package"
             
             latest=$(curl --location --silent --user-agent 'github/kiss-community outdated tracker' "repology.org/api/v1/project/$repology_package" \
               jq -r  ".[] | select(.visiblename == \"$package\") | .version" \
               | grep --invert-match '[a-zA-Z]' \
               | sort --version-sort \
               | tail -n 1)
+
+            echo "Latest version found: $latest"
             
             if [[ "$version" != "$latest" ]] && [[ -n "$latest" ]]; then
               echo "- [ ] $package $version $latest" >> outdated
+            else
+              echo "no update found for $package"
             fi
           done
           echo "::set-output name=content::$(cat outdated)"
