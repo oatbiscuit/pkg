@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+export GOPATH="$PWD/go"
+export GO111MODULE=on
+
+go build \
+    -modcacherw \
+    -trimpath
+
+install -Dm755 fzf "$1/usr/bin/fzf"
+install -Dm644 -t "$1/usr/share/man/man1" man/man1/*.1
