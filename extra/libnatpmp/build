@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+# remove extra /usr in Makefile.
+sed -i "s|INSTALLPREFIX ?= \$(PREFIX)/usr|INSTALLPREFIX ?= \$(PREFIX)|" Makefile
+
+make
+make DESTDIR="$1" PREFIX=/usr install
