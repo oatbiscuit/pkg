@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+cargo build --release --package localsend-cli
+
+install -Dm755 target/release/localsend-cli "$1/usr/bin/localsend-cli"
